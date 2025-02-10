@@ -1,0 +1,38 @@
+name: Generate Snake Animation
+
+on:
+  schedule:
+    - cron: "0 0 * * *"  # Executa diariamente à meia-noite
+  workflow_dispatch:  # Permite execução manual
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v3
+
+      - name: Gerar animação da cobra
+        uses: Platane/snk@v3
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          outputs: github-contribution-grid-snake.svg
+          svg_out_path: dist/snake.svg
+          gif_out_path: dist/snake.gif
+          color_snake: "#00FF00"  # Cor da cobra (altere se quiser)
+          color_dots: "#AAAAAA"  # Cor dos pontos vazios
+          pixel_size: 10  # Tamanho dos pixels da grade
+          frame_duration: 200  # Tempo de cada frame (ms)
+          growth: "growth"  # Faz a cobra crescer ao comer commits
+
+      - name: Criar pasta dist se não existir
+        run: mkdir -p dist
+
+      - name: Commit e push do arquivo gerado
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add dist/snake.svg dist/snake.gif || echo "Nenhum arquivo para adicionar"
+          git commit -m "Atualizar animação da cobra" || echo "Nenhuma alteração para commit"
+          git push https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Nicochefe/Nicochefe.git main || echo "Nada para enviar"
